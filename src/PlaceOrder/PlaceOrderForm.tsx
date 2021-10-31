@@ -13,18 +13,21 @@ import { TakeProfit } from "./components/TakeProfit/TakeProfit";
 import "./PlaceOrderForm.scss";
 import useYup from "../components/hooks/yupValidationResolver";
 import { PlaceOrderFormProps } from "./model";
+import { placeOrderFormSchema } from "./validation";
 
 const b = block("place-order-form");
 
-export const placeOrderFormSchema = yup.object({
-  price: yup.number().positive().required(),
-  amount: yup.number().positive().required(),
-  total: yup.number().positive().required(),
-});
-
 export const PlaceOrderForm = observer(() => {
-  const { activeOrderSide, price, total, amount, setPrice, setAmount, setTotal, setOrderSide } =
-    useStore();
+  const {
+    activeOrderSide,
+    price,
+    total,
+    amount,
+    setPrice,
+    setAmount,
+    setTotal,
+    setOrderSide,
+  } = useStore();
 
   const form = useForm<PlaceOrderFormProps>({
     resolver: useYup(placeOrderFormSchema),
@@ -42,9 +45,14 @@ export const PlaceOrderForm = observer(() => {
   return (
     <FormProvider {...form}>
       <form className={b()} onSubmit={handleSubmit(onFormSubmit, onFormError)}>
-        <div className={b("header")}>Binance: {`${BASE_CURRENCY} / ${QUOTE_CURRENCY}`}</div>
+        <div className={b("header")}>
+          Binance: {`${BASE_CURRENCY} / ${QUOTE_CURRENCY}`}
+        </div>
         <div className={b("type-switch")}>
-          <PlaceOrderTypeSwitch activeOrderSide={activeOrderSide} onChange={setOrderSide} />
+          <PlaceOrderTypeSwitch
+            activeOrderSide={activeOrderSide}
+            onChange={setOrderSide}
+          />
         </div>
         <div className={b("price")}>
           <FormNumberInput
@@ -74,8 +82,14 @@ export const PlaceOrderForm = observer(() => {
           <TakeProfit orderSide={activeOrderSide} />
         </div>
         <div className="submit">
-          <Button color={activeOrderSide === "buy" ? "green" : "red"} type="submit" fullWidth>
-            {activeOrderSide === "buy" ? `Buy ${BASE_CURRENCY}` : `Sell ${QUOTE_CURRENCY}`}
+          <Button
+            color={activeOrderSide === "buy" ? "green" : "red"}
+            type="submit"
+            fullWidth
+          >
+            {activeOrderSide === "buy"
+              ? `Buy ${BASE_CURRENCY}`
+              : `Sell ${QUOTE_CURRENCY}`}
           </Button>
         </div>
       </form>

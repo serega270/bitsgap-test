@@ -2,19 +2,25 @@ import React from "react";
 
 import { Controller, RegisterOptions, useFormContext } from "react-hook-form";
 import { NumberInput, NumberInputProps } from "../NumberInput/NumberInput";
-import {ControllerRenderProps} from "react-hook-form/dist/types/controller";
+import { ControllerRenderProps } from "react-hook-form/dist/types/controller";
 
 type Props = NumberInputProps & {
   name: string;
   rules?: RegisterOptions;
 };
 
-const FormNumberInput = ({ name, rules, defaultValue = "", onChange, ...props }: Props) => {
-  const { control, formState, setValue } = useFormContext() || {};
+const FormNumberInput = ({
+  name,
+  rules,
+  defaultValue = "",
+  onChange,
+  ...props
+}: Props) => {
+  const { control, formState } = useFormContext() || {};
   const errorMessage = formState.errors[name]?.message;
 
   const handleChange = (val: number, field: ControllerRenderProps) => {
-    field.onChange(val)
+    field.onChange(val);
     if (onChange) {
       onChange(val);
     }
