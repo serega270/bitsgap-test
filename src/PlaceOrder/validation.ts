@@ -1,4 +1,5 @@
 import * as yup from "yup";
+import { MIN_PROFIT } from "./constants";
 
 export const placeOrderFormSchema = yup.object({
   price: yup.number().positive().required(),
@@ -13,7 +14,7 @@ export const placeOrderFormSchema = yup.object({
             .number()
             .positive()
             .required()
-            .min(0.01, "Minimum value is 0.01"),
+            .min(MIN_PROFIT, `Minimum value is ${MIN_PROFIT}`),
           target_price: yup
             .number()
             .positive("Price must be greater than 0")

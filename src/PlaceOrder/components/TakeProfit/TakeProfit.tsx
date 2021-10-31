@@ -1,12 +1,12 @@
 /* eslint @typescript-eslint/no-use-before-define: 0 */
 
-import React, { Fragment } from "react";
+import React, { Fragment, useEffect } from "react";
 import block from "bem-cn-lite";
 import { AddCircle, Cancel } from "@material-ui/icons";
 
-import { Switch, TextButton, FormNumberInput } from "components";
+import { TextButton, FormNumberInput, FormSwitch } from "components";
 
-import { QUOTE_CURRENCY } from "../../constants";
+import { MIN_PROFIT, QUOTE_CURRENCY } from "../../constants";
 import { OrderSide } from "../../model";
 import "./TakeProfit.scss";
 import { useFieldArray, useFormContext } from "react-hook-form";
@@ -19,13 +19,12 @@ type Props = {
 const b = block("take-profit");
 
 const TakeProfit = ({ orderSide }: Props) => {
-  const { fields, append, remove } = useFieldArray(
-    {
-      name: "profits",
-    },
-  );
+  const { fields, append, remove } = useFieldArray({
+    name: "profits",
+  });
   const { watch } = useFormContext();
   const profitsWatch = watch("profits");
+  const withProfitWatch = watch("with_profit");
 
   const addProfit = (data: any) => {
     if (profitsWatch.length > 4) {
@@ -35,47 +34,66 @@ const TakeProfit = ({ orderSide }: Props) => {
       ? profitsWatch[profitsWatch.length - 1]
       : { profit: 0, target_price: 0, amount: 100 };
 
-    append({ profit: prevValue.profit + 2, target_price: prevValue.target_price, amount: "" });
+    append({
+      profit: prevValue.profit + 2,
+      target_price: prevValue.target_price,
+      amount: "",
+    });
   };
 
   const removeProfit = (index: number) => {
     remove(index);
   };
 
+  useEffect(() => {
+    if (!withProfitWatch) {
+      remove()
+    }
+    if (withProfitWatch) {
+      append({
+        profit: MIN_PROFIT,
+        target_price: 0,
+        amount: 100,
+      });
+    }
+  }, [withProfitWatch]);
+
   return (
     <div className={b()}>
       <div className={b("switch")}>
         <span>Take profit</span>
-        <Switch checked />
+        <FormSwitch name="with_profit" />
       </div>
-      <div className={b("content")}>
-        {renderTitles()}
-        {fields.map((field, index) => (
-          <Fragment key={field.id}>
-            {renderInputs(index)}
-          </Fragment>
-        ))}
+      {withProfitWatch && (
+        <div className={b("content")}>
+          {renderTitles()}
+          {fields.map((field, index) => (
+            <Fragment key={field.id}>{renderInputs(index)}</Fragment>
+          ))}
 
-        {fields.length < 5 && (
-          <TextButton
-            className={b("add-button")}
-            onClick={() => addProfit(fields)}
-          >
-            <AddCircle className={b("add-icon")} />
-            <span>Add profit target {fields.length}/5</span>
-          </TextButton>
-        )}
+          {fields.length < 5 && (
+            <TextButton
+              className={b("add-button")}
+              onClick={() => addProfit(fields)}
+            >
+              <AddCircle className={b("add-icon")} />
+              <span>Add profit target {fields.length}/5</span>
+            </TextButton>
+          )}
 
-        <div className={b("projected-profit")}>
-          <span className={b("projected-profit-title")}>Projected profit</span>
-          <span className={b("projected-profit-value")}>
-            <span>0</span>
-            <span className={b("projected-profit-currency")}>
-              {QUOTE_CURRENCY}
+          <div className={b("projected-profit")}>
+            <span className={b("projected-profit-title")}>
+              Projected profit
             </span>
-          </span>
+            <span className={b("projected-profit-value")}>
+              <span>0</span>
+              <span className={b("projected-profit-currency")}>
+                {QUOTE_CURRENCY}
+              </span>
+            </span>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
   function renderInputs(index: number) {

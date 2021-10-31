@@ -6,7 +6,7 @@ import "./Switch.scss";
 const b = block("switch");
 
 type Props = {
-  checked: boolean;
+  checked?: boolean;
   label?: string;
   disabled?: boolean;
   reversed?: boolean;
@@ -42,3 +42,4 @@ function Switch({
 }
 
 export { Switch };
+export type { Props as SwitchProps };
