@@ -6,7 +6,7 @@ import { AddCircle, Cancel } from "@material-ui/icons";
 
 import { TextButton, FormNumberInput, FormSwitch } from "components";
 
-import { MIN_PROFIT, QUOTE_CURRENCY } from "../../constants";
+import { PROFIT_STEP, QUOTE_CURRENCY } from "../../constants";
 import { OrderSide } from "../../model";
 import "./TakeProfit.scss";
 import { useFieldArray, useFormContext } from "react-hook-form";
@@ -19,7 +19,7 @@ type Props = {
 const b = block("take-profit");
 
 const TakeProfit = ({ orderSide }: Props) => {
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, update } = useFieldArray({
     name: "profits",
   });
   const { watch } = useFormContext();
@@ -37,9 +37,37 @@ const TakeProfit = ({ orderSide }: Props) => {
     append({
       profit: prevValue.profit + 2,
       target_price: prevValue.target_price,
-      amount: "",
+      amount: 20,
     });
   };
+
+  useEffect(() => {
+    const amountTotal = fields.reduce((total: number, row: any) => {
+      return total + (row.amount || 0);
+    }, 0);
+    if (amountTotal > 100) {
+      // @ts-ignore
+      const maxValue = Math.max.apply(
+        Math,
+        fields.map(function (o: any) {
+          return o.amount;
+        }),
+      );
+      const rowWithMaxAmountIndex = fields
+        .map((i: any) => i.amount || 0)
+        .indexOf(maxValue);
+
+      const values = { ...fields[rowWithMaxAmountIndex] };
+
+      update(rowWithMaxAmountIndex, {
+        // @ts-ignore
+        profit: values.profit,
+        // @ts-ignore
+        target_price: values.target_price,
+        amount: 100 - amountTotal + maxValue,
+      });
+    }
+  }, [fields.length]);
 
   const removeProfit = (index: number) => {
     remove(index);
@@ -47,11 +75,11 @@ const TakeProfit = ({ orderSide }: Props) => {
 
   useEffect(() => {
     if (!withProfitWatch) {
-      remove()
+      remove();
     }
     if (withProfitWatch) {
       append({
-        profit: MIN_PROFIT,
+        profit: PROFIT_STEP,
         target_price: 0,
         amount: 100,
       });
