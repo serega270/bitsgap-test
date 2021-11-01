@@ -1,16 +1,9 @@
 import React from "react";
-import {
-  logRoles,
-  prettyDOM,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import { renderWithReactHookForm } from "../../../test-helpers/renderWithReactHookForm";
 import { TakeProfit } from "./TakeProfit";
 import userEvent from "@testing-library/user-event";
 import { clearAndTypeTextBox } from "../../../test-helpers/clearAndTypeTextBox";
-import { queryByLabelText } from "@testing-library/dom/types/queries";
 
 let output = {};
 
