@@ -14,15 +14,26 @@ const FormNumberInput = ({
   rules,
   defaultValue = "",
   onChange,
+  onBlur,
   ...props
 }: Props) => {
-  const { control, formState: { errors } } = useFormContext() || {};
+  const {
+    control,
+    formState: { errors },
+  } = useFormContext() || {};
   const errorMessage = errors[name]?.message;
 
   const handleChange = (val: number, field: ControllerRenderProps) => {
     field.onChange(val);
     if (onChange) {
       onChange(val);
+    }
+  };
+
+  const handleBlur = (val: number, field: ControllerRenderProps) => {
+    field.onBlur();
+    if (onBlur) {
+      onBlur(val);
     }
   };
 
@@ -34,6 +45,7 @@ const FormNumberInput = ({
           {...props}
           {...field}
           onChange={(value) => handleChange(Number(value), field)}
+          onBlur={(value) => handleBlur(Number(value), field)}
           error={errorMessage}
         />
       )}

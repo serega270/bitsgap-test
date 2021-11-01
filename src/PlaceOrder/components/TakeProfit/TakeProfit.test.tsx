@@ -37,7 +37,6 @@ describe("TakeProfit", () => {
           {
             amount: 100,
             profit: 2,
-            target_price: 0,
           },
         ],
         with_profit: true,

@@ -13,7 +13,6 @@ import { useFieldArray, useFormContext } from "react-hook-form";
 
 type Props = {
   orderSide: OrderSide;
-  // ...
 };
 
 const b = block("take-profit");
@@ -26,7 +25,6 @@ const TakeProfit = ({ orderSide }: Props) => {
   const priceWatch = watch("price");
   const profitsWatch = watch("profits");
   const withProfitWatch = watch("with_profit");
-  const [projectedProfit, setProjectedProfit] = useState(0);
 
   const addProfit = () => {
     if (profitsWatch.length > 4) {
@@ -39,7 +37,7 @@ const TakeProfit = ({ orderSide }: Props) => {
     const nextProfit = prevValue.profit + 2;
     append({
       profit: nextProfit,
-      target_price: priceWatch + (priceWatch * nextProfit / 100),
+      target_price: priceWatch + (priceWatch * nextProfit) / 100,
       amount: 20,
     });
   };
@@ -87,29 +85,41 @@ const TakeProfit = ({ orderSide }: Props) => {
     if (withProfitWatch) {
       append({
         profit: PROFIT_STEP,
-        target_price: priceWatch + (priceWatch * PROFIT_STEP / 100),
+        target_price: priceWatch + (priceWatch * PROFIT_STEP) / 100,
         amount: 100,
       });
     }
   }, [withProfitWatch]);
 
-  useEffect(() => {
-    if (fields?.length) {
-      const values = getValues();
-      const total = profitsWatch.reduce((acc: number, row: any) => {
-        const value =
-          orderSide === "buy"
-            ? ((values.amount * row.amount) / 100) *
-              (row.target_price - values.price)
-            : ((values.amount * row.amount) / 100) *
-              (values.price - row.target_price);
-
-        return acc + value;
-      }, 0);
-
-      setProjectedProfit(total.toFixed(2));
+  const projectedProfit = (): number => {
+    if (!fields?.length) {
+      return 0;
     }
-  }, [fields]);
+    const values = getValues();
+    const total = profitsWatch.reduce((acc: number, row: any) => {
+      const value =
+        orderSide === "buy"
+          ? ((values.amount * row.amount) / 100) *
+            (row.target_price - values.price)
+          : ((values.amount * row.amount) / 100) *
+            (values.price - row.target_price);
+
+      return acc + value;
+    }, 0);
+
+    return total;
+  };
+
+  const onTargetPriceBlur = (val: any, index: number) => {
+    if (priceWatch === 0) {
+      return
+    }
+    const profit = 100 * ( val - priceWatch ) / priceWatch;
+    update(index, {
+      ...profitsWatch[index],
+      profit,
+    });
+  };
 
   return (
     <div className={b()}>
@@ -125,10 +135,7 @@ const TakeProfit = ({ orderSide }: Props) => {
           ))}
 
           {fields.length < 5 && (
-            <TextButton
-              className={b("add-button")}
-              onClick={addProfit}
-            >
+            <TextButton className={b("add-button")} onClick={addProfit}>
               <AddCircle className={b("add-icon")} />
               <span>Add profit target {fields.length}/5</span>
             </TextButton>
@@ -139,7 +146,7 @@ const TakeProfit = ({ orderSide }: Props) => {
               Projected profit
             </span>
             <span className={b("projected-profit-value")}>
-              <span aria-label="projected-profit">{projectedProfit}</span>
+              <span aria-label="projected-profit">{projectedProfit().toFixed(2)}</span>
               <span className={b("projected-profit-currency")}>
                 {QUOTE_CURRENCY}
               </span>
@@ -163,6 +170,7 @@ const TakeProfit = ({ orderSide }: Props) => {
           InputProps={{ endAdornment: QUOTE_CURRENCY }}
           variant="underlined"
           name={`profits[${index}].target_price`}
+          onBlur={(val) => onTargetPriceBlur(val, index)}
         />
         <FormNumberInput
           decimalScale={2}
@@ -171,7 +179,10 @@ const TakeProfit = ({ orderSide }: Props) => {
           name={`profits[${index}].amount`}
         />
         <div className={b("cancel-icon")}>
-          <Cancel onClick={() => removeProfit(index)} aria-label="delete_profit" />
+          <Cancel
+            onClick={() => removeProfit(index)}
+            aria-label="delete_profit"
+          />
         </div>
       </div>
     );
