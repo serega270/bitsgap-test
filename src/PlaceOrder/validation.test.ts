@@ -21,4 +21,14 @@ describe("PlaceOrder validation", () => {
     expect(result.errors).toEqual([PROFIT_STEP_MESSAGE]);
     expect(result.path).toEqual('profits[2].profit');
   });
+
+  it("profitAmountMaximumValidation. invalid case", async () => {
+    const result = await placeOrderFormSchema
+      .validateAt("profits", {
+        profits: [{ amount: 80 }, { amount: 30 }],
+      })
+      .catch((err: any) => err);
+
+    expect(result.type).toEqual('profit_amount_sum');
+  });
 });

@@ -23,10 +23,11 @@ const TakeProfit = ({ orderSide }: Props) => {
     name: "profits",
   });
   const { watch, setValue } = useFormContext();
+  const priceWatch = watch("price");
   const profitsWatch = watch("profits");
   const withProfitWatch = watch("with_profit");
 
-  const addProfit = (data: any) => {
+  const addProfit = () => {
     if (profitsWatch.length > 4) {
       return;
     }
@@ -34,9 +35,10 @@ const TakeProfit = ({ orderSide }: Props) => {
       ? profitsWatch[profitsWatch.length - 1]
       : { profit: 0, target_price: 0, amount: 100 };
 
+    const nextProfit = prevValue.profit + 2;
     append({
-      profit: prevValue.profit + 2,
-      target_price: prevValue.target_price,
+      profit: nextProfit,
+      target_price: priceWatch + (priceWatch * nextProfit / 100),
       amount: 20,
     });
   };
@@ -84,7 +86,7 @@ const TakeProfit = ({ orderSide }: Props) => {
     if (withProfitWatch) {
       append({
         profit: PROFIT_STEP,
-        target_price: 0,
+        target_price: priceWatch + (priceWatch * PROFIT_STEP / 100),
         amount: 100,
       });
     }
@@ -106,7 +108,7 @@ const TakeProfit = ({ orderSide }: Props) => {
           {fields.length < 5 && (
             <TextButton
               className={b("add-button")}
-              onClick={() => addProfit(fields)}
+              onClick={addProfit}
             >
               <AddCircle className={b("add-icon")} />
               <span>Add profit target {fields.length}/5</span>

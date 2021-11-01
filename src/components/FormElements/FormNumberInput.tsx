@@ -16,8 +16,8 @@ const FormNumberInput = ({
   onChange,
   ...props
 }: Props) => {
-  const { control, formState } = useFormContext() || {};
-  const errorMessage = formState.errors[name]?.message;
+  const { control, formState: { errors } } = useFormContext() || {};
+  const errorMessage = errors[name]?.message;
 
   const handleChange = (val: number, field: ControllerRenderProps) => {
     field.onChange(val);
