@@ -1,7 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react";
 import block from "bem-cn-lite";
-import * as yup from "yup";
 import { useForm, FormProvider } from "react-hook-form";
 
 import { Button, FormNumberInput } from "components";
@@ -18,21 +17,17 @@ import { placeOrderFormSchema } from "./validation";
 const b = block("place-order-form");
 
 export const PlaceOrderForm = observer(() => {
-  const {
-    activeOrderSide,
-    price,
-    total,
-    amount,
-    setPrice,
-    setAmount,
-    setTotal,
-    setOrderSide,
-  } = useStore();
+  const { activeOrderSide, setOrderSide } = useStore();
 
   const form = useForm<PlaceOrderFormProps>({
     resolver: useYup(placeOrderFormSchema),
+    defaultValues: {
+      price: 0,
+      amount: 0,
+      total: 0,
+    },
   });
-  const { handleSubmit } = form;
+  const { handleSubmit, setValue, getValues } = form;
 
   const onFormSubmit = (value: any) => {
     debugger;
@@ -40,6 +35,16 @@ export const PlaceOrderForm = observer(() => {
 
   const onFormError = (errors: any) => {
     console.log("onError", errors);
+  };
+
+  const totalUpdate = () => {
+    const values = getValues();
+    setValue("total", (values.amount || 0) * (values.price || 0));
+  };
+
+  const onTotalChange = () => {
+    const values = getValues();
+    setValue("amount", values.price > 0 ? values.total / values.price : 0);
   };
 
   return (
@@ -57,25 +62,25 @@ export const PlaceOrderForm = observer(() => {
         <div className={b("price")}>
           <FormNumberInput
             label="Price"
-            value={price}
             InputProps={{ endAdornment: QUOTE_CURRENCY }}
             name="price"
+            onChange={totalUpdate}
           />
         </div>
         <div className={b("amount")}>
           <FormNumberInput
-            value={amount}
             label="Amount"
             InputProps={{ endAdornment: BASE_CURRENCY }}
             name="amount"
+            onChange={totalUpdate}
           />
         </div>
         <div className={b("total")}>
           <FormNumberInput
-            value={total}
             label="Total"
             InputProps={{ endAdornment: QUOTE_CURRENCY }}
             name="total"
+            onChange={onTotalChange}
           />
         </div>
         <div className={b("take-profit")}>

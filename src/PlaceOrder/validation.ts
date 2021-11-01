@@ -5,6 +5,8 @@ import ValidationError from "yup/lib/ValidationError";
 export const PROFIT_STEP_MESSAGE =
   "Each target's profit should be greater than the previous one";
 export const PROFIT_MAXIMUM_MESSAGE = "Maximum profit sum is 500%";
+export const POSITIVE_MESSAGE = "Must be greater than 0";
+export const TYPE_ERROR_MESSAGE = "Invalid value";
 
 /**
  * Check that the next step is more profitable than the previous one
@@ -77,21 +79,39 @@ const profitAmountMaximumValidation = (
 };
 
 export const placeOrderFormSchema = yup.object({
-  price: yup.number().positive().required(),
-  amount: yup.number().positive().required(),
-  total: yup.number().positive().required(),
+  price: yup
+    .number()
+    .typeError(TYPE_ERROR_MESSAGE)
+    .positive(POSITIVE_MESSAGE)
+    .required(),
+  amount: yup
+    .number()
+    .typeError(TYPE_ERROR_MESSAGE)
+    .positive(POSITIVE_MESSAGE)
+    .required(),
+  total: yup
+    .number()
+    .typeError(TYPE_ERROR_MESSAGE)
+    .positive(POSITIVE_MESSAGE)
+    .required(),
   profits: yup.array().of(
     yup
       .object({
         profit: yup
           .number()
+          .typeError(TYPE_ERROR_MESSAGE)
           .required()
           .min(MIN_PROFIT, `Minimum value is ${MIN_PROFIT}`),
         target_price: yup
           .number()
+          .typeError(TYPE_ERROR_MESSAGE)
           .positive("Price must be greater than 0")
           .required(),
-        amount: yup.number().positive("Must be greater than 0").required(),
+        amount: yup
+          .number()
+          .typeError(TYPE_ERROR_MESSAGE)
+          .positive(POSITIVE_MESSAGE)
+          .required(),
       })
       .test("profit_greater", profitStepValidation)
       .test("profit_sum", profitMaximumValidation)

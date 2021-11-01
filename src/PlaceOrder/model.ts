@@ -1,14 +1,14 @@
 export type OrderSide = "buy" | "sell";
 
 export type PlaceOrderFormProps = {
-  readonly price: string;
-  readonly amount: string;
-  readonly total: string;
+  readonly price: number;
+  readonly amount: number;
+  readonly total: number;
   readonly profits: Profit[];
 };
 
 export type Profit = {
-  readonly profit: string;
-  readonly target: string;
-  readonly amount: string;
+  readonly profit: number;
+  readonly target: number;
+  readonly amount: number;
 }
