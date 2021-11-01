@@ -22,7 +22,7 @@ const TakeProfit = ({ orderSide }: Props) => {
   const { fields, append, remove, update } = useFieldArray({
     name: "profits",
   });
-  const { watch } = useFormContext();
+  const { watch, setValue } = useFormContext();
   const profitsWatch = watch("profits");
   const withProfitWatch = watch("with_profit");
 
@@ -66,6 +66,10 @@ const TakeProfit = ({ orderSide }: Props) => {
         target_price: values.target_price,
         amount: 100 - amountTotal + maxValue,
       });
+    }
+
+    if (fields.length === 0) {
+      setValue("with_profit", false);
     }
   }, [fields.length]);
 
@@ -146,7 +150,7 @@ const TakeProfit = ({ orderSide }: Props) => {
           name={`profits[${index}].amount`}
         />
         <div className={b("cancel-icon")}>
-          <Cancel onClick={() => removeProfit(index)} />
+          <Cancel onClick={() => removeProfit(index)} aria-label="delete_profit" />
         </div>
       </div>
     );

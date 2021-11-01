@@ -1,15 +1,16 @@
 import React from "react";
 import {
-  cleanup,
   logRoles,
-  render,
+  prettyDOM,
   screen,
   waitFor,
+  within,
 } from "@testing-library/react";
 import { renderWithReactHookForm } from "../../../test-helpers/renderWithReactHookForm";
 import { TakeProfit } from "./TakeProfit";
 import userEvent from "@testing-library/user-event";
 import { clearAndTypeTextBox } from "../../../test-helpers/clearAndTypeTextBox";
+import { queryByLabelText } from "@testing-library/dom/types/queries";
 
 let output = {};
 
@@ -61,6 +62,7 @@ describe("TakeProfit", () => {
       },
     });
 
+    await waitFor(() => userEvent.click(screen.getByRole("checkbox")));
     const addProfitButton = screen.getByRole("button", {
       name: /Add profit target/i,
     });
@@ -128,15 +130,13 @@ describe("TakeProfit", () => {
     const { container } = renderWithReactHookForm(
       <TakeProfit orderSide="buy" />,
       {
-        defaultValues: {
-          with_profit: true,
-        },
         onSubmit: (e) => {
           output = e;
         },
       },
     );
 
+    await waitFor(() => userEvent.click(screen.getByRole("checkbox")));
     const addProfitButton = screen.getByRole("button", {
       name: /Add profit target/i,
     });
@@ -151,6 +151,45 @@ describe("TakeProfit", () => {
 
     expect(container.getElementsByClassName("take-profit__inputs").length).toBe(
       5,
+    );
+  });
+
+  it("should remove profit row", async () => {
+    const { container } = renderWithReactHookForm(
+      <TakeProfit orderSide="buy" />,
+      {
+        onSubmit: (e) => {
+          output = e;
+        },
+      },
+    );
+
+    await waitFor(() => userEvent.click(screen.getByRole("checkbox")));
+    const addProfitButton = screen.getByRole("button", {
+      name: /Add profit target/i,
+    });
+    userEvent.click(addProfitButton);
+    userEvent.click(addProfitButton);
+
+    const deleteIcons = screen.queryAllByLabelText("delete_profit");
+
+    await waitFor(() => userEvent.click(deleteIcons[2]));
+    await waitFor(() => {});
+    expect(container.getElementsByClassName("take-profit__inputs").length).toBe(
+      2,
+    );
+    await waitFor(() => userEvent.click(deleteIcons[1]));
+    await waitFor(() => userEvent.click(deleteIcons[0]));
+    expect(container.getElementsByClassName("take-profit__inputs").length).toBe(
+      0,
+    );
+
+    userEvent.click(screen.getByRole("button", { name: "submit" }));
+    await waitFor(() =>
+      expect(output).toMatchObject({
+        profits: [],
+        with_profit: false,
+      }),
     );
   });
 });

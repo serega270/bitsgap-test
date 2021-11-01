@@ -33,6 +33,7 @@ const FormSwitch = ({
           {...props}
           {...field}
           onChange={(value) => handleChange(value, field)}
+          checked={field.value}
         />
       )}
       rules={rules}
