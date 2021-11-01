@@ -1,6 +1,6 @@
 /* eslint @typescript-eslint/no-use-before-define: 0 */
 
-import React, { Fragment, useEffect } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import block from "bem-cn-lite";
 import { AddCircle, Cancel } from "@material-ui/icons";
 
@@ -22,10 +22,11 @@ const TakeProfit = ({ orderSide }: Props) => {
   const { fields, append, remove, update } = useFieldArray({
     name: "profits",
   });
-  const { watch, setValue } = useFormContext();
+  const { watch, setValue, getValues } = useFormContext();
   const priceWatch = watch("price");
   const profitsWatch = watch("profits");
   const withProfitWatch = watch("with_profit");
+  const [projectedProfit, setProjectedProfit] = useState(0);
 
   const addProfit = () => {
     if (profitsWatch.length > 4) {
@@ -92,6 +93,24 @@ const TakeProfit = ({ orderSide }: Props) => {
     }
   }, [withProfitWatch]);
 
+  useEffect(() => {
+    if (fields?.length) {
+      const values = getValues();
+      const total = profitsWatch.reduce((acc: number, row: any) => {
+        const value =
+          orderSide === "buy"
+            ? ((values.amount * row.amount) / 100) *
+              (row.target_price - values.price)
+            : ((values.amount * row.amount) / 100) *
+              (values.price - row.target_price);
+
+        return acc + value;
+      }, 0);
+
+      setProjectedProfit(total.toFixed(2));
+    }
+  }, [fields]);
+
   return (
     <div className={b()}>
       <div className={b("switch")}>
@@ -120,7 +139,7 @@ const TakeProfit = ({ orderSide }: Props) => {
               Projected profit
             </span>
             <span className={b("projected-profit-value")}>
-              <span>0</span>
+              <span aria-label="projected-profit">{projectedProfit}</span>
               <span className={b("projected-profit-currency")}>
                 {QUOTE_CURRENCY}
               </span>

@@ -140,7 +140,6 @@ describe("TakeProfit", () => {
 
     userEvent.click(addProfitButton);
     expect(addProfitButton).not.toBeInTheDocument();
-    // expect(addProfitButton).toHaveClass.toBeInTheDocument()
 
     expect(container.getElementsByClassName("take-profit__inputs").length).toBe(
       5,

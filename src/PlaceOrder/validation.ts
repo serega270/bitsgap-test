@@ -42,8 +42,8 @@ const profitMaximumValidation = (
 ): ValidationError | boolean => {
   const rows = context.parent;
   const currIndex = context.options.index;
-  const total = rows.reduce((total: number, row: any) => {
-    return total + (row.profit || 0);
+  const total = rows.reduce((acc: number, row: any) => {
+    return acc + (row.profit || 0);
   }, 0);
 
   return total > 500
@@ -65,8 +65,8 @@ const profitAmountMaximumValidation = (
 ): ValidationError | boolean => {
   const rows = context.parent;
   const currIndex = context.options.index;
-  const total = rows.reduce((total: number, row: any) => {
-    return total + (row.amount || 0);
+  const total = rows.reduce((acc: number, row: any) => {
+    return acc + (row.amount || 0);
   }, 0);
 
   return total > 100
