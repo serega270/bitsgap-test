@@ -1,15 +1,17 @@
+import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { render as rtlRender } from "@testing-library/react";
-import React from "react";
+
 import useYup from "../components/hooks/yupValidationResolver";
+import { BaseSchema } from "yup";
 
 interface ReactHookFormOptions {
-  defaultValues?: any;
-  onSubmit?: (e: any) => void;
-  resolveSchema?: any;
+  defaultValues?: { [key: string]: any };
+  onSubmit?: (e: { [key: string]: any }) => void;
+  resolveSchema?: BaseSchema;
 }
 
-export const FormWrapper: React.FC<any> = ({
+export const FormWrapper: React.FC<ReactHookFormOptions> = ({
   children,
   defaultValues = {},
   onSubmit,
@@ -38,7 +40,7 @@ export const FormWrapper: React.FC<any> = ({
 };
 
 export function renderWithReactHookForm(
-  ui: React.ReactElement<any, string | React.JSXElementConstructor<any>>,
+  ui: React.ReactElement,
   { defaultValues = {}, onSubmit, resolveSchema }: ReactHookFormOptions,
 ) {
   return rtlRender(ui, {

@@ -29,12 +29,12 @@ export const PlaceOrderForm = observer(() => {
   });
   const { handleSubmit, setValue, getValues } = form;
 
-  const onFormSubmit = (value: any) => {
-    debugger;
+  const onFormSubmit = (value: PlaceOrderFormProps) => {
+    console.log("Form value", value);
   };
 
   const onFormError = (errors: any) => {
-    console.log("onError", errors);
+    console.log("Place order form validation", errors);
   };
 
   const totalUpdate = () => {

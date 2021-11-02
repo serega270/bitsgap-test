@@ -19,7 +19,7 @@ const FormSwitch = ({
 }: Props) => {
   const { control } = useFormContext() || {};
 
-  const handleChange = (val: boolean, field: ControllerRenderProps) => {
+  const handleChange = (val: boolean, field: Omit<ControllerRenderProps, 'ref'>) => {
     field.onChange(val);
     if (onChange) {
       onChange(val);
@@ -28,7 +28,7 @@ const FormSwitch = ({
 
   return (
     <Controller
-      render={({ field }) => (
+      render={({ field: { ref, ...field } }) => (
         <Switch
           {...props}
           {...field}

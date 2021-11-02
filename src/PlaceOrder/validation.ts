@@ -1,6 +1,7 @@
 import * as yup from "yup";
 import { MIN_PROFIT } from "./constants";
 import ValidationError from "yup/lib/ValidationError";
+import { TestContext } from "yup";
 
 export const PROFIT_STEP_MESSAGE =
   "Each target's profit should be greater than the previous one";

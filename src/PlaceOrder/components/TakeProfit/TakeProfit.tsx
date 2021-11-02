@@ -1,69 +1,77 @@
 /* eslint @typescript-eslint/no-use-before-define: 0 */
 
-import React, { Fragment, useEffect, useState } from "react";
+import React, {Fragment, useCallback, useEffect, useState} from "react";
 import block from "bem-cn-lite";
 import { AddCircle, Cancel } from "@material-ui/icons";
+import { FieldValues, useFieldArray, useFormContext } from "react-hook-form";
 
 import { TextButton, FormNumberInput, FormSwitch } from "components";
 
 import { PROFIT_STEP, QUOTE_CURRENCY } from "../../constants";
-import { OrderSide } from "../../model";
+import { OrderSide, Profit } from "../../model";
 import "./TakeProfit.scss";
-import { useFieldArray, useFormContext } from "react-hook-form";
 
 type Props = {
   orderSide: OrderSide;
 };
 
+type FormValues = FieldValues & {
+  profits: Array<Profit>;
+};
+
 const b = block("take-profit");
 
 const TakeProfit = ({ orderSide }: Props) => {
-  const { fields, append, remove, update } = useFieldArray({
+  const { fields, append, remove, update } = useFieldArray<
+    FormValues,
+    "profits"
+  >({
     name: "profits",
   });
   const { watch, setValue, getValues } = useFormContext();
+  const allWatch = watch();
   const priceWatch = watch("price");
   const profitsWatch = watch("profits");
   const withProfitWatch = watch("with_profit");
-
-  const addProfit = () => {
-    if (profitsWatch.length > 4) {
-      return;
-    }
-    const prevValue = profitsWatch.length
-      ? profitsWatch[profitsWatch.length - 1]
-      : { profit: 0, target_price: 0, amount: 100 };
-
-    const nextProfit = prevValue.profit + 2;
-    append({
-      profit: nextProfit,
-      target_price: priceWatch + (priceWatch * nextProfit) / 100,
-      amount: 20,
-    });
-  };
+  const [projectedProfit, setProjectedProfit] = useState(0);
 
   useEffect(() => {
-    const amountTotal = fields.reduce((total: number, row: any) => {
+    if (fields?.length) {
+      const values = getValues();
+      const total = profitsWatch.reduce((acc: number, row: Profit) => {
+        const value =
+          orderSide === "buy"
+            ? ((values.amount * row.amount) / 100) *
+            (row.target_price - values.price)
+            : ((values.amount * row.amount) / 100) *
+            (values.price - row.target_price);
+
+        return acc + value;
+      }, 0);
+
+      setProjectedProfit(total.toFixed(2));
+    }
+  }, [allWatch]);
+
+  useEffect(() => {
+    const amountTotal = fields.reduce((total: number, row) => {
       return total + (row.amount || 0);
     }, 0);
     if (amountTotal > 100) {
-      // @ts-ignore
       const maxValue = Math.max.apply(
         Math,
-        fields.map(function (o: any) {
+        fields.map(function (o) {
           return o.amount;
         }),
       );
       const rowWithMaxAmountIndex = fields
-        .map((i: any) => i.amount || 0)
+        .map((i) => i.amount || 0)
         .indexOf(maxValue);
 
       const values = { ...fields[rowWithMaxAmountIndex] };
 
       update(rowWithMaxAmountIndex, {
-        // @ts-ignore
         profit: values.profit,
-        // @ts-ignore
         target_price: values.target_price,
         amount: 100 - amountTotal + maxValue,
       });
@@ -73,10 +81,6 @@ const TakeProfit = ({ orderSide }: Props) => {
       setValue("with_profit", false);
     }
   }, [fields.length]);
-
-  const removeProfit = (index: number) => {
-    remove(index);
-  };
 
   useEffect(() => {
     if (!withProfitWatch) {
@@ -91,35 +95,45 @@ const TakeProfit = ({ orderSide }: Props) => {
     }
   }, [withProfitWatch]);
 
-  const projectedProfit = (): number => {
-    if (!fields?.length) {
-      return 0;
+  useEffect(() => {
+    fields.forEach((row, index) => {
+      update(index, {
+        ...profitsWatch[index],
+        target_price: priceWatch + (priceWatch * row.profit) / 100,
+      });
+    });
+  }, [priceWatch]);
+
+  const addProfit = useCallback(() => {
+    if (profitsWatch.length > 4) {
+      return;
     }
-    const values = getValues();
-    const total = profitsWatch.reduce((acc: number, row: any) => {
-      const value =
-        orderSide === "buy"
-          ? ((values.amount * row.amount) / 100) *
-            (row.target_price - values.price)
-          : ((values.amount * row.amount) / 100) *
-            (values.price - row.target_price);
+    const prevValue = profitsWatch.length
+      ? profitsWatch[profitsWatch.length - 1]
+      : { profit: 0, target_price: 0, amount: 100 };
 
-      return acc + value;
-    }, 0);
+    const nextProfit = prevValue.profit + 2;
+    append({
+      profit: nextProfit,
+      target_price: priceWatch + (priceWatch * nextProfit) / 100,
+      amount: 20,
+    });
+  }, [profitsWatch, priceWatch])
 
-    return total;
-  };
+  const removeProfit = useCallback((index: number) => {
+    remove(index);
+  }, [])
 
-  const onTargetPriceBlur = (val: any, index: number) => {
-    if (priceWatch === 0) {
-      return
+  const onTargetPriceBlur = useCallback((val: number | null, index: number) => {
+    if (priceWatch === 0 || !val) {
+      return;
     }
-    const profit = 100 * ( val - priceWatch ) / priceWatch;
+    const profit = (100 * (val - priceWatch)) / priceWatch;
     update(index, {
       ...profitsWatch[index],
       profit,
     });
-  };
+  }, [profitsWatch, priceWatch])
 
   return (
     <div className={b()}>
@@ -146,7 +160,7 @@ const TakeProfit = ({ orderSide }: Props) => {
               Projected profit
             </span>
             <span className={b("projected-profit-value")}>
-              <span aria-label="projected-profit">{projectedProfit().toFixed(2)}</span>
+              <span aria-label="projected-profit">{projectedProfit}</span>
               <span className={b("projected-profit-currency")}>
                 {QUOTE_CURRENCY}
               </span>

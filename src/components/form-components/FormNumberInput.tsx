@@ -23,14 +23,14 @@ const FormNumberInput = ({
   } = useFormContext() || {};
   const errorMessage = errors[name]?.message;
 
-  const handleChange = (val: number, field: ControllerRenderProps) => {
+  const handleChange = (val: number, field: Omit<ControllerRenderProps, 'ref'>) => {
     field.onChange(val);
     if (onChange) {
       onChange(val);
     }
   };
 
-  const handleBlur = (val: number, field: ControllerRenderProps) => {
+  const handleBlur = (val: number, field: Omit<ControllerRenderProps, 'ref'>) => {
     field.onBlur();
     if (onBlur) {
       onBlur(val);
@@ -39,7 +39,7 @@ const FormNumberInput = ({
 
   return (
     <Controller
-      render={({ field }) => (
+      render={({ field: { ref, ...field } }) => (
         <NumberInput
           inputProps={{ "aria-label": name }}
           {...props}
@@ -47,6 +47,7 @@ const FormNumberInput = ({
           onChange={(value) => handleChange(Number(value), field)}
           onBlur={(value) => handleBlur(Number(value), field)}
           error={errorMessage}
+          value={Number(field.value)}
         />
       )}
       rules={rules}

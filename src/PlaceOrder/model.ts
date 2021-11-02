@@ -9,6 +9,6 @@ export type PlaceOrderFormProps = {
 
 export type Profit = {
   readonly profit: number;
-  readonly target: number;
+  readonly target_price: number;
   readonly amount: number;
 }

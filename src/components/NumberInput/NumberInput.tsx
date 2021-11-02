@@ -4,7 +4,7 @@ import { TextInput, TextInputProps } from "../TextInput/TextInput";
 import { useNumberFormat } from "./useNumberFormat";
 
 type Props = Omit<TextInputProps, "onChange" | "onBlur" | "value"> & {
-  value?: any; // TODO
+  value?: number | null;
   min?: number;
   max?: number;
   decimalScale?: number;
@@ -26,7 +26,7 @@ function NumberInput({
   ...rest
 }: Props) {
   const numberInput = useNumberFormat(
-    value,
+    value || 0,
     { onChange, onBlur, onFocus, onMouseUp, onKeyUp },
     { min, max, decimalScale }
   );
