@@ -1,6 +1,6 @@
 /* eslint @typescript-eslint/no-use-before-define: 0 */
 
-import React, {Fragment, useCallback, useEffect, useState} from "react";
+import React, { Fragment, useCallback, useEffect, useState } from "react";
 import block from "bem-cn-lite";
 import { AddCircle, Cancel } from "@material-ui/icons";
 import { FieldValues, useFieldArray, useFormContext } from "react-hook-form";
@@ -42,9 +42,9 @@ const TakeProfit = ({ orderSide }: Props) => {
         const value =
           orderSide === "buy"
             ? ((values.amount * row.amount) / 100) *
-            (row.target_price - values.price)
+              (row.target_price - values.price)
             : ((values.amount * row.amount) / 100) *
-            (values.price - row.target_price);
+              (values.price - row.target_price);
 
         return acc + value;
       }, 0);
@@ -89,7 +89,10 @@ const TakeProfit = ({ orderSide }: Props) => {
     if (withProfitWatch) {
       append({
         profit: PROFIT_STEP,
-        target_price: priceWatch + (priceWatch * PROFIT_STEP) / 100,
+        target_price:
+          orderSide === "buy"
+            ? priceWatch + (priceWatch * PROFIT_STEP) / 100
+            : priceWatch - (priceWatch * PROFIT_STEP) / 100,
         amount: 100,
       });
     }
@@ -99,10 +102,13 @@ const TakeProfit = ({ orderSide }: Props) => {
     fields.forEach((row, index) => {
       update(index, {
         ...profitsWatch[index],
-        target_price: priceWatch + (priceWatch * row.profit) / 100,
+        target_price:
+          orderSide === "buy"
+            ? priceWatch + (priceWatch * row.profit) / 100
+            : priceWatch - (priceWatch * row.profit) / 100,
       });
     });
-  }, [priceWatch]);
+  }, [priceWatch, orderSide]);
 
   const addProfit = useCallback(() => {
     if (profitsWatch.length > 4) {
@@ -115,25 +121,31 @@ const TakeProfit = ({ orderSide }: Props) => {
     const nextProfit = prevValue.profit + 2;
     append({
       profit: nextProfit,
-      target_price: priceWatch + (priceWatch * nextProfit) / 100,
+      target_price:
+        orderSide === "buy"
+          ? priceWatch + (priceWatch * nextProfit) / 100
+          : priceWatch - (priceWatch * nextProfit) / 100,
       amount: 20,
     });
-  }, [profitsWatch, priceWatch])
+  }, [profitsWatch, priceWatch]);
 
   const removeProfit = useCallback((index: number) => {
     remove(index);
-  }, [])
+  }, []);
 
-  const onTargetPriceBlur = useCallback((val: number | null, index: number) => {
-    if (priceWatch === 0 || !val) {
-      return;
-    }
-    const profit = (100 * (val - priceWatch)) / priceWatch;
-    update(index, {
-      ...profitsWatch[index],
-      profit,
-    });
-  }, [profitsWatch, priceWatch])
+  const onTargetPriceBlur = useCallback(
+    (val: number | null, index: number) => {
+      if (priceWatch === 0 || !val) {
+        return;
+      }
+      const profit = (100 * (val - priceWatch)) / priceWatch;
+      update(index, {
+        ...profitsWatch[index],
+        profit,
+      });
+    },
+    [profitsWatch, priceWatch],
+  );
 
   return (
     <div className={b()}>
